@@ -8,15 +8,12 @@ import numpy as np
 from typing import Dict, Any
 import warnings
 
-# Suppress warnings for cleaner output
 warnings.filterwarnings("ignore")
 
-# Import the original Lightning implementation
 from state.tx.models.state_transition import (
     StateTransitionPerturbationModel as LightningModel,
 )
 
-# Import the new vanilla PyTorch implementation with alias
 from smolstate.embd_sum import StateTransitionPerturbationModel as VanillaModel
 
 
@@ -84,6 +81,7 @@ def create_model_config() -> Dict[str, Any]:
         "gene_decoder_bool": True,
         "loss": "energy",
         "blur": 0.05,
+        "embed_key": "X_hvg",
     }
 
 
@@ -188,9 +186,7 @@ def compare_implementations():
     print(f"   Main output:")
     print(f"     Max difference: {max_main_diff:.2e}")
     print(f"     Mean difference: {mean_main_diff:.2e}")
-    print(
-        f"     Lightning range: [{lightning_main.min():.4f}, {lightning_main.max():.4f}]"
-    )
+    print(f"     Lightning range: [{lightning_main.min():.4f}, {lightning_main.max():.4f}]")
     print(f"     Vanilla range: [{vanilla_main.min():.4f}, {vanilla_main.max():.4f}]")
 
     # Confidence comparison (if present)
@@ -216,14 +212,10 @@ def compare_implementations():
     print(f"\n{'✅' if success else '❌'} Comparison Result:")
     if success:
         print(f"   PASSED - Both implementations produce nearly identical outputs")
-        print(
-            f"   Maximum difference: {max_main_diff:.2e} (tolerance: {tolerance:.2e})"
-        )
+        print(f"   Maximum difference: {max_main_diff:.2e} (tolerance: {tolerance:.2e})")
     else:
         print(f"   FAILED - Implementations differ significantly")
-        print(
-            f"   Maximum difference: {max_main_diff:.2e} (tolerance: {tolerance:.2e})"
-        )
+        print(f"   Maximum difference: {max_main_diff:.2e} (tolerance: {tolerance:.2e})")
 
         # Additional debugging info
         print(f"\n🔧 Debugging Info:")
@@ -273,7 +265,13 @@ def run_quick_tests():
             vanilla_model.eval()
 
             # Create smaller test batch for speed
-            batch = create_test_batch(batch_size=1, seq_len=32)
+            batch = create_test_batch(
+                batch_size=1,
+                seq_len=config["cell_set_len"],
+                input_dim=config["input_dim"],
+                pert_dim=config["pert_dim"],
+                gene_dim=config["gene_dim"],
+            )
 
             # Forward pass
             with torch.no_grad():
@@ -303,9 +301,7 @@ def run_quick_tests():
             results.append(False)
 
     success_rate = sum(results) / len(results)
-    print(
-        f"\n📊 Quick Tests: {success_rate:.1%} passed ({sum(results)}/{len(results)})"
-    )
+    print(f"\n📊 Quick Tests: {success_rate:.1%} passed ({sum(results)}/{len(results)})")
 
     return success_rate == 1.0
 
@@ -326,9 +322,7 @@ if __name__ == "__main__":
         print(f"   Quick tests: {'✅ PASSED' if quick_success else '❌ FAILED'}")
 
         if main_success and quick_success:
-            print(
-                f"\n🎉 SUCCESS: Vanilla PyTorch implementation matches Lightning implementation!"
-            )
+            print(f"\n🎉 SUCCESS: Vanilla PyTorch implementation matches Lightning implementation!")
         else:
             print(f"\n⚠️  ISSUES DETECTED: Please check implementation differences.")
 

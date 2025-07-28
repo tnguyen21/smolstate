@@ -126,9 +126,7 @@ class ConfidenceToken(nn.Module):
         confidence_tokens = self.confidence_token.expand(batch_size, -1, -1)
         return torch.cat([seq_input, confidence_tokens], dim=1)
 
-    def extract_confidence_prediction(
-        self, transformer_output: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    def extract_confidence_prediction(self, transformer_output: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         main_output = transformer_output[:, :-1, :]
         confidence_output = transformer_output[:, -1:, :]
         confidence_pred = self.confidence_projection(confidence_output).squeeze(-1)
@@ -229,9 +227,7 @@ class StateTransitionPerturbationModel(PerturbationModel):
         self.detach_decoder = kwargs.get("detach_decoder", False)
 
         # Update transformer kwargs
-        self.transformer_backbone_kwargs["n_positions"] = (
-            self.cell_sentence_len + kwargs.get("extra_tokens", 0)
-        )
+        self.transformer_backbone_kwargs["n_positions"] = self.cell_sentence_len + kwargs.get("extra_tokens", 0)
 
         super().__init__(
             input_dim=input_dim,
@@ -249,17 +245,13 @@ class StateTransitionPerturbationModel(PerturbationModel):
 
         # Add batch encoder if needed
         if kwargs.get("batch_encoder", False) and batch_dim is not None:
-            self.batch_encoder = nn.Embedding(
-                num_embeddings=batch_dim, embedding_dim=hidden_dim
-            )
+            self.batch_encoder = nn.Embedding(num_embeddings=batch_dim, embedding_dim=hidden_dim)
         else:
             self.batch_encoder = None
 
         # Add confidence token if requested
         if kwargs.get("confidence_token", False):
-            self.confidence_token = ConfidenceToken(
-                hidden_dim=hidden_dim, dropout=self.dropout
-            )
+            self.confidence_token = ConfidenceToken(hidden_dim=hidden_dim, dropout=self.dropout)
             self.confidence_loss_fn = nn.MSELoss()
         else:
             self.confidence_token = None
@@ -292,9 +284,7 @@ class StateTransitionPerturbationModel(PerturbationModel):
         elif loss_name == "se":
             sinkhorn_weight = kwargs.get("sinkhorn_weight", 0.01)
             energy_weight = kwargs.get("energy_weight", 1.0)
-            self.loss_fn = CombinedLoss(
-                sinkhorn_weight=sinkhorn_weight, energy_weight=energy_weight, blur=blur
-            )
+            self.loss_fn = CombinedLoss(sinkhorn_weight=sinkhorn_weight, energy_weight=energy_weight, blur=blur)
         elif loss_name == "sinkhorn":
             self.loss_fn = SamplesLoss(loss="sinkhorn", blur=blur)
         else:
@@ -334,11 +324,9 @@ class StateTransitionPerturbationModel(PerturbationModel):
             self.basal_encoder = nn.Linear(self.input_dim, self.hidden_dim)
 
         # Transformer backbone
-        self.transformer_backbone, self.transformer_model_dim = (
-            get_transformer_backbone(
-                self.transformer_backbone_key,
-                self.transformer_backbone_kwargs,
-            )
+        self.transformer_backbone, self.transformer_model_dim = get_transformer_backbone(
+            self.transformer_backbone_key,
+            self.transformer_backbone_kwargs,
         )
 
         # Output projection
@@ -381,9 +369,7 @@ class StateTransitionPerturbationModel(PerturbationModel):
         # Reshape inputs based on padding
         if padded:
             pert = batch["pert_emb"].reshape(-1, self.cell_sentence_len, self.pert_dim)
-            basal = batch["ctrl_cell_emb"].reshape(
-                -1, self.cell_sentence_len, self.input_dim
-            )
+            basal = batch["ctrl_cell_emb"].reshape(-1, self.cell_sentence_len, self.input_dim)
         else:
             pert = batch["pert_emb"].reshape(1, -1, self.pert_dim)
             basal = batch["ctrl_cell_emb"].reshape(1, -1, self.input_dim)
@@ -422,20 +408,14 @@ class StateTransitionPerturbationModel(PerturbationModel):
             base = torch.eye(seq_length, device=device).view(1, seq_length, seq_length)
             attn_mask = base.repeat(batch_size, 1, 1)
 
-            outputs = self.transformer_backbone(
-                inputs_embeds=seq_input, attention_mask=attn_mask
-            )
+            outputs = self.transformer_backbone(inputs_embeds=seq_input, attention_mask=attn_mask)
             transformer_output = outputs.last_hidden_state
         else:
-            transformer_output = self.transformer_backbone(
-                inputs_embeds=seq_input
-            ).last_hidden_state
+            transformer_output = self.transformer_backbone(inputs_embeds=seq_input).last_hidden_state
 
         # Extract confidence prediction if used
         if self.confidence_token is not None:
-            res_pred, confidence_pred = (
-                self.confidence_token.extract_confidence_prediction(transformer_output)
-            )
+            res_pred, confidence_pred = self.confidence_token.extract_confidence_prediction(transformer_output)
         else:
             res_pred = transformer_output
 
@@ -459,9 +439,7 @@ class StateTransitionPerturbationModel(PerturbationModel):
         else:
             return output
 
-    def compute_loss(
-        self, batch: Dict[str, torch.Tensor], padded: bool = True
-    ) -> Dict[str, torch.Tensor]:
+    def compute_loss(self, batch: Dict[str, torch.Tensor], padded: bool = True) -> Dict[str, torch.Tensor]:
         """
         Compute the total loss for training.
 
@@ -511,9 +489,7 @@ class StateTransitionPerturbationModel(PerturbationModel):
             # Compute decoder predictions and loss
             pert_cell_counts_preds = self.gene_decoder(latent_preds)
             if padded:
-                gene_targets = gene_targets.reshape(
-                    -1, self.cell_sentence_len, self.gene_decoder.gene_dim()
-                )
+                gene_targets = gene_targets.reshape(-1, self.cell_sentence_len, self.gene_decoder.gene_dim())
             else:
                 gene_targets = gene_targets.reshape(1, -1, self.gene_decoder.gene_dim())
 
@@ -526,15 +502,11 @@ class StateTransitionPerturbationModel(PerturbationModel):
             loss_target = total_loss.detach().clone().unsqueeze(0) * 10
 
             if confidence_pred.dim() == 2:
-                loss_target = loss_target.unsqueeze(0).expand(
-                    confidence_pred.size(0), 1
-                )
+                loss_target = loss_target.unsqueeze(0).expand(confidence_pred.size(0), 1)
             else:
                 loss_target = loss_target.unsqueeze(0).expand(confidence_pred.size(0))
 
-            confidence_loss = self.confidence_loss_fn(
-                confidence_pred.squeeze(), loss_target.squeeze()
-            )
+            confidence_loss = self.confidence_loss_fn(confidence_pred.squeeze(), loss_target.squeeze())
             losses["confidence_loss"] = confidence_loss
             total_loss = total_loss + 0.1 * confidence_loss
 
@@ -593,9 +565,7 @@ class StateTransitionPerturbationModel(PerturbationModel):
 class ModelTrainer:
     """Simple trainer for the perturbation model."""
 
-    def __init__(
-        self, model: StateTransitionPerturbationModel, optimizer: torch.optim.Optimizer
-    ):
+    def __init__(self, model: StateTransitionPerturbationModel, optimizer: torch.optim.Optimizer):
         self.model = model
         self.optimizer = optimizer
 
