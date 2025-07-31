@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "smolstate"
+version = "0.1.0"
+description = "Minimal reimplementation of state training loop"
+authors = [
+    {name = "SmolState Team"},
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "torch>=1.12.0",
+    "geomloss",
+    "pyyaml",
+    "toml",
+    "numpy",
+    "pathlib",
+    "h5py",
+    "tqdm",
+    "transformers",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "black", "ruff"]
+
+[project.scripts]
+smolstate = "smolstate.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["smolstate*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py38"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]
+
+[tool.black]
+line-length = 100
+target-version = ['py38']

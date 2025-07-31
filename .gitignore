@@ -1,0 +1,100 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyTorch
+*.pth
+*.pt
+*.ckpt
+*.safetensors
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.conda/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Model outputs and training artifacts
+out/
+output/
+outputs/
+checkpoints/
+logs/
+runs/
+wandb/
+tensorboard_logs/
+lightning_logs/
+
+# Data files (usually too large for git)
+*.h5
+*.h5ad
+*.csv
+*.tsv
+*.parquet
+*.feather
+data/
+datasets/
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.pid
+*.seed
+*.coverage
+.nyc_output
+
+# Configuration files with secrets
+.env.local
+.env.production
+secrets.yaml
+config_private.yaml
+
+# Large model files
+*.bin
+*.model
+*.pkl
+*.pickle
