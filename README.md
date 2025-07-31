@@ -1,10 +1,10 @@
 # SmolState
 
-A minimal reimplementation of the state training loop for perturbation prediction models.
+A minimal reimplementation of the state perturbation model training loop.
 
 ## Overview
 
-SmolState provides a simplified, standalone training pipeline for the StateTransitionPerturbationModel, extracting the core training logic from the larger state framework while maintaining compatibility with existing data and model configurations.
+SmolState provides a simplified, standalone training pipeline for the StateTransitionPerturbationModel, inspired by and adapted from `state/src/state/tx/models/state_transition.py`. This implementation extracts the core training logic from the larger state framework while maintaining compatibility with existing data and model configurations.
 
 ## Features
 
@@ -83,12 +83,13 @@ data.kwargs.pert_col=gene
 
 ### Model Architecture
 
-The StateTransitionPerturbationModel features:
-- Transformer backbone (LLaMA-based by default)
-- Perturbation and basal expression encoders
-- Distributional losses (Energy, Sinkhorn)
-- Optional gene decoder
-- Optional confidence token
+The StateTransitionPerturbationModel (adapted from `state/src/state/tx/models/state_transition.py`) features:
+- Transformer backbone (LLaMA-based by default, with bidirectional attention)
+- Perturbation and basal expression encoders  
+- Distributional losses (Energy, Sinkhorn) via geomloss
+- Optional gene decoder for multi-task learning
+- Optional confidence token for uncertainty estimation
+- Residual connections and layer normalization
 
 ## Output Structure
 
@@ -121,9 +122,12 @@ Core dependencies:
 - pyyaml
 - toml
 
-State framework dependencies:
-- cell_load
-- state.tx.models.utils
+Additional dependencies:
+- h5py (for reading H5AD files)
+- transformers (for transformer backbones)
+- tqdm (for progress bars)
+
+Note: This implementation is standalone and does not require the full state framework installation.
 
 ## Examples
 
@@ -179,10 +183,10 @@ SmolState is designed to be minimal and hackable. The codebase is small and focu
 
 ### Common Issues
 
-1. **Import Errors**: Ensure state and cell_load are in Python path
-2. **Data Loading**: Check starter.toml paths are correct
-3. **Memory Issues**: Reduce batch_size or cell_set_len
-4. **CUDA Errors**: Verify GPU memory and CUDA compatibility
+1. **Tensor Shape Errors**: Ensure data loading returns correctly shaped tensors for the model
+2. **Data Loading**: Check starter.toml paths are correct and H5AD files are accessible
+3. **Memory Issues**: Reduce batch_size or cell_set_len for large datasets
+4. **CUDA Errors**: Verify GPU memory and CUDA compatibility, use CPU fallback if needed
 
 ### Debug Mode
 
