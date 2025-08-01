@@ -221,11 +221,11 @@ class GPT2BidirectionalModel(GPT2Model):
 def get_transformer_backbone(key: str, kwargs: dict) -> tuple[PreTrainedModel, int]:
     """
     Get transformer backbone model and its hidden dimension.
-    
+
     Args:
         key: Transformer type ("GPT2" or "llama")
         kwargs: Configuration parameters for the transformer
-        
+
     Returns:
         Tuple of (model, model_dim)
     """
