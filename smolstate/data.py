@@ -5,8 +5,8 @@ from pathlib import Path
 from typing import Dict, Any, Optional, Tuple
 from torch.utils.data import DataLoader
 
-from perturbation_data import PerturbationDataModule
-from config import create_config
+from .perturbation_data import PerturbationDataModule
+from .config import create_config
 
 logger = logging.getLogger(__name__)
 

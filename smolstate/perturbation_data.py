@@ -488,7 +488,7 @@ def create_data_module(config: Dict) -> PerturbationDataModule:
 
 if __name__ == "__main__":
     """Test data loading functionality."""
-    from config import create_config
+    from .config import create_config
 
     config = create_config()
     data_module = create_data_module(config.config)

@@ -7,7 +7,7 @@ import torch
 import torch.nn as nn
 from geomloss import SamplesLoss
 
-from model_utils import (
+from .model_utils import (
     build_mlp,
     get_activation_class,
     get_transformer_backbone,

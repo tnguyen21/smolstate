@@ -8,8 +8,8 @@ from torch.utils.data import DataLoader
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import CosineAnnealingLR
 
-from model import StateTransitionPerturbationModel
-from checkpoint import CheckpointManager
+from .model import StateTransitionPerturbationModel
+from .checkpoint import CheckpointManager
 
 logger = logging.getLogger(__name__)
 

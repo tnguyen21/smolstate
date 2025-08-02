@@ -7,10 +7,10 @@ Usage:
     python main.py train data.kwargs.toml_config_path=../state/starter.toml training.max_steps=400
 """
 
-from config import create_config, parse_cli_overrides
-from data import create_data_module, DataConfig
-from model import StateTransitionPerturbationModel
-from train import create_trainer
+from smolstate.config import create_config, parse_cli_overrides
+from smolstate.data import create_data_module, DataConfig
+from smolstate.model import StateTransitionPerturbationModel
+from smolstate.train import create_trainer
 
 import argparse
 import logging
