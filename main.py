@@ -7,6 +7,11 @@ Usage:
     python main.py train data.kwargs.toml_config_path=../state/starter.toml training.max_steps=400
 """
 
+from config import create_config, parse_cli_overrides
+from data import create_data_module, DataConfig
+from model import StateTransitionPerturbationModel
+from train import create_trainer
+
 import argparse
 import logging
 import sys
@@ -18,11 +23,6 @@ import torch
 current_dir = Path(__file__).parent
 if str(current_dir) not in sys.path:
     sys.path.insert(0, str(current_dir))
-
-from config import create_config, parse_cli_overrides
-from data import create_data_module, DataConfig
-from model import StateTransitionPerturbationModel
-from train import create_trainer
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)

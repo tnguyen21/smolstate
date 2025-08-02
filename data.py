@@ -80,7 +80,7 @@ class DataModuleWrapper:
         # Try to get validation dataloader
         try:
             val_dl = self.data_module.val_dataloader()
-        except:
+        except:  # noqa
             val_dl = None
             logger.warning("No validation dataloader available")
 

@@ -3,18 +3,18 @@ Simple comparison script between PyTorch Lightning and vanilla PyTorch implement
 Verifies that both implementations produce identical outputs with the same random weights.
 """
 
+from state.tx.models.state_transition import (
+    StateTransitionPerturbationModel as LightningModel,
+)
+
+from smolstate.model import StateTransitionPerturbationModel as VanillaModel
+
 import torch
 import numpy as np
 from typing import Dict, Any
 import warnings
 
 warnings.filterwarnings("ignore")
-
-from state.tx.models.state_transition import (
-    StateTransitionPerturbationModel as LightningModel,
-)
-
-from smolstate.model import StateTransitionPerturbationModel as VanillaModel
 
 
 def set_seed(seed: int = 42):
@@ -81,7 +81,6 @@ def create_model_config() -> Dict[str, Any]:
         "gene_decoder_bool": True,
         "loss": "energy",
         "blur": 0.05,
-        "embed_key": "X_hvg",
     }
 
 
