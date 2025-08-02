@@ -186,6 +186,7 @@ class SmolTrainer:
         logger.info(f"Training on device: {self.device}")
 
         start_time = time.time()
+        train_metrics = {"total_loss": 0.0}  # Initialize to avoid UnboundLocalError
 
         # Training loop
         while self.global_step < self.max_steps:
