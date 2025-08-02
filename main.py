@@ -145,9 +145,7 @@ def main():
 
     # Train command
     train_parser = subparsers.add_parser("train", help="Train a model")
-    train_parser.add_argument(
-        "--toml-config-path", default="../state/starter.toml", help="Path to TOML configuration file"
-    )
+    train_parser.add_argument("--toml-config-path", default="starter.toml", help="Path to TOML configuration file")
     train_parser.add_argument("--model", default="state_sm", help="Model configuration name")
     train_parser.add_argument("--output-dir", default="out", help="Output directory for training artifacts")
     train_parser.add_argument("--name", default="smolstate_run", help="Experiment name")
