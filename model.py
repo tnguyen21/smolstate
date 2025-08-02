@@ -7,6 +7,19 @@ import torch
 import torch.nn as nn
 from geomloss import SamplesLoss
 
+try:
+    from .model_utils import (
+        build_mlp,
+        get_activation_class,
+        get_transformer_backbone,
+    )
+except ImportError:
+    from model_utils import (
+        build_mlp,
+        get_activation_class,
+        get_transformer_backbone,
+    )
+
 logger = logging.getLogger(__name__)
 
 
@@ -292,18 +305,6 @@ class StateTransitionPerturbationModel(PerturbationModel):
 
     def _build_networks(self):
         """Build the neural network components."""
-        try:
-            from .model_utils import (
-                build_mlp,
-                get_activation_class,
-                get_transformer_backbone,
-            )
-        except ImportError:
-            from model_utils import (
-                build_mlp,
-                get_activation_class,
-                get_transformer_backbone,
-            )
 
         activation_class = get_activation_class(self.hparams.get("activation", "gelu"))
 

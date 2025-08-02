@@ -5,6 +5,16 @@ from pathlib import Path
 from typing import Dict, Any, Optional, Tuple
 from torch.utils.data import DataLoader
 
+try:
+    from .perturbation_data import PerturbationDataModule
+except ImportError:
+    from perturbation_data import PerturbationDataModule
+
+try:
+    from .config import create_config
+except ImportError:
+    from config import create_config
+
 logger = logging.getLogger(__name__)
 
 
@@ -19,10 +29,6 @@ class DataModuleWrapper:
 
     def setup(self) -> None:
         """Initialize the data module with configuration."""
-        try:
-            from .perturbation_data import PerturbationDataModule
-        except ImportError:
-            from perturbation_data import PerturbationDataModule
 
         # Get data configuration
         data_kwargs = self.config.get("kwargs", {})
@@ -202,10 +208,6 @@ def create_data_module(config: Dict[str, Any]) -> DataModuleWrapper:
 
 def test_data_loading():
     """Test data loading functionality."""
-    try:
-        from .config import create_config
-    except ImportError:
-        from config import create_config
 
     # Create config
     config = create_config()

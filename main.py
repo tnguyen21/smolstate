@@ -174,7 +174,7 @@ def main():
     train_parser.add_argument("overrides", nargs="*", help="Configuration overrides (e.g., training.max_steps=1000)")
 
     # Info command
-    info_parser = subparsers.add_parser("info", help="Show system info")
+    subparsers.add_parser("info", help="Show system info")
 
     args = parser.parse_args()
 

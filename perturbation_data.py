@@ -480,7 +480,7 @@ class PerturbationDataModule:
 
             # Get configuration
             zeroshot_celltypes = self.config.get_zeroshot_celltypes(dataset_name)
-            fewshot_celltypes = self.config.get_fewshot_celltypes(dataset_name)
+            self.config.get_fewshot_celltypes(dataset_name)
             is_training_dataset = self.config.training.get(dataset_name) == "train"
 
             logger.info(f"Processing dataset {dataset_name}")
