@@ -179,10 +179,8 @@ def load_model_from_checkpoint(checkpoint_path: str, model_class: type, map_loca
     else:
         device = torch.device(map_location)
 
-    # Load checkpoint
     checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
 
-    # Get model hyperparameters
     if "hyper_parameters" in checkpoint:
         model_kwargs = checkpoint["hyper_parameters"]
     elif "config" in checkpoint and "model" in checkpoint["config"]:
@@ -192,11 +190,9 @@ def load_model_from_checkpoint(checkpoint_path: str, model_class: type, map_loca
 
     model = model_class(**model_kwargs)
 
-    # Load model state
     model.load_state_dict(checkpoint["model_state_dict"])
     model.to(device)
 
-    # Return model and checkpoint info
     checkpoint_info = {
         "step": checkpoint.get("step", 0),
         "epoch": checkpoint.get("epoch", 0),
@@ -213,7 +209,6 @@ def save_model_for_inference(model: torch.nn.Module, output_path: str, config: O
     """Save model in inference-ready format."""
     output_path = Path(output_path)
 
-    # Save model state and config
     save_data = {
         "model_state_dict": model.state_dict(),
         "hyper_parameters": getattr(model, "hparams", {}),
