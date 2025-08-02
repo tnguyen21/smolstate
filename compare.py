@@ -88,12 +88,12 @@ def create_model_config() -> Dict[str, Any]:
 def compare_implementations():
     """Compare the Lightning and vanilla PyTorch implementations."""
 
-    print("🔬 Comparing PyTorch Lightning vs Vanilla PyTorch Implementations")
+    print("Comparing PyTorch Lightning vs Vanilla PyTorch Implementations")
     print("=" * 70)
 
     # Create model configuration
     config = create_model_config()
-    print("📋 Model Configuration:")
+    print("Model Configuration:")
     key_params = ["input_dim", "hidden_dim", "output_dim", "pert_dim", "cell_set_len"]
     for key in key_params:
         print(f"   {key}: {config[key]}")
@@ -102,7 +102,7 @@ def compare_implementations():
     print()
 
     # Create test batch
-    print("📦 Creating test batch...")
+    print("Creating test batch...")
     batch = create_test_batch(
         batch_size=2,
         seq_len=config["cell_set_len"],
@@ -117,7 +117,7 @@ def compare_implementations():
     print()
 
     # Create models with identical initialization
-    print("🏗️  Creating models with identical weights...")
+    print("Creating models with identical weights...")
 
     # Lightning model
     set_seed(42)
@@ -137,12 +137,12 @@ def compare_implementations():
     print(f"   Vanilla model parameters: {vanilla_params:,}")
 
     if lightning_params != vanilla_params:
-        print("   ⚠️  Parameter counts don't match!")
+        print("   WARNING: Parameter counts don't match!")
         return False
     print()
 
     # Forward pass through both models
-    print("🚀 Running forward passes...")
+    print("Running forward passes...")
 
     with torch.no_grad():
         # Lightning model forward pass
@@ -153,7 +153,7 @@ def compare_implementations():
             else:
                 lightning_main, lightning_confidence = lightning_output, None
         except Exception as e:
-            print(f"❌ Error in Lightning model: {e}")
+            print(f"Error in Lightning model: {e}")
             return False
 
         # Vanilla model forward pass
@@ -164,7 +164,7 @@ def compare_implementations():
             else:
                 vanilla_main, vanilla_confidence = vanilla_output, None
         except Exception as e:
-            print(f"❌ Error in vanilla model: {e}")
+            print(f"Error in vanilla model: {e}")
             return False
 
     print(f"   Lightning output shape: {lightning_main.shape}")
@@ -176,7 +176,7 @@ def compare_implementations():
     print()
 
     # Compare outputs
-    print("🔍 Comparing outputs...")
+    print("Comparing outputs...")
 
     # Main output comparison
     main_diff = torch.abs(lightning_main - vanilla_main)
@@ -209,7 +209,7 @@ def compare_implementations():
 
     success = main_match and confidence_match
 
-    print(f"\n{'✅' if success else '❌'} Comparison Result:")
+    print(f"\n{'PASSED' if success else 'FAILED'} Comparison Result:")
     if success:
         print("   PASSED - Both implementations produce nearly identical outputs")
         print(f"   Maximum difference: {max_main_diff:.2e} (tolerance: {tolerance:.2e})")
@@ -218,7 +218,7 @@ def compare_implementations():
         print(f"   Maximum difference: {max_main_diff:.2e} (tolerance: {tolerance:.2e})")
 
         # Additional debugging info
-        print("\n🔧 Debugging Info:")
+        print("\nDebugging Info:")
         print(f"   First 5 Lightning values: {lightning_main.flatten()[:5].tolist()}")
         print(f"   First 5 Vanilla values: {vanilla_main.flatten()[:5].tolist()}")
         print(f"   First 5 differences: {main_diff.flatten()[:5].tolist()}")
@@ -229,7 +229,7 @@ def compare_implementations():
 def run_quick_tests():
     """Run quick tests with different configurations."""
 
-    print("\n🧪 Quick Configuration Tests")
+    print("\nQuick Configuration Tests")
     print("=" * 40)
 
     base_config = create_model_config()
@@ -248,7 +248,7 @@ def run_quick_tests():
     results = []
 
     for i, test_config in enumerate(test_configs, 1):
-        print(f"\n🧪 Test {i}: {test_config['name']}")
+        print(f"\nTest {i}: {test_config['name']}")
 
         # Create modified config
         config = base_config.copy()
@@ -293,11 +293,11 @@ def run_quick_tests():
             max_diff = torch.abs(lightning_main - vanilla_main).max().item()
             success = max_diff < 1e-4
 
-            print(f"   {'✅' if success else '❌'} Max difference: {max_diff:.2e}")
+            print(f"   {'PASSED' if success else 'FAILED'} Max difference: {max_diff:.2e}")
             results.append(success)
 
         except Exception as e:
-            print(f"   ❌ Error: {e}")
+            print(f"   Error: {e}")
             results.append(False)
 
     success_rate = sum(results) / len(results)
@@ -307,7 +307,7 @@ def run_quick_tests():
 
 
 if __name__ == "__main__":
-    print("🚀 Model Implementation Comparison")
+    print("Model Implementation Comparison")
     print("=" * 50)
 
     try:
@@ -317,21 +317,21 @@ if __name__ == "__main__":
         # Run quick tests
         quick_success = run_quick_tests()
 
-        print("\n🏁 Final Results:")
-        print(f"   Main comparison: {'✅ PASSED' if main_success else '❌ FAILED'}")
-        print(f"   Quick tests: {'✅ PASSED' if quick_success else '❌ FAILED'}")
+        print("\nFinal Results:")
+        print(f"   Main comparison: {'PASSED' if main_success else 'FAILED'}")
+        print(f"   Quick tests: {'PASSED' if quick_success else 'FAILED'}")
 
         if main_success and quick_success:
-            print("\n🎉 SUCCESS: Vanilla PyTorch implementation matches Lightning implementation!")
+            print("\nSUCCESS: Vanilla PyTorch implementation matches Lightning implementation!")
         else:
-            print("\n⚠️  ISSUES DETECTED: Please check implementation differences.")
+            print("\nISSUES DETECTED: Please check implementation differences.")
 
     except ImportError as e:
-        print(f"❌ Import Error: {e}")
+        print(f"Import Error: {e}")
         print("Make sure both implementations are available in your Python path.")
 
     except Exception as e:
-        print(f"❌ Unexpected Error: {e}")
+        print(f"Unexpected Error: {e}")
         import traceback
 
         traceback.print_exc()
