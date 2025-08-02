@@ -22,6 +22,9 @@ dependencies = [
     "tqdm",
     "transformers",
     "torch",
+    "anndata",
+    "scanpy",
+    "lightning",
 ]
 
 [project.optional-dependencies]
