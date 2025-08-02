@@ -3,7 +3,6 @@ Model utilities - standalone version of state.tx.models.utils
 Contains only the necessary functions for StateTransitionPerturbationModel
 """
 
-from typing import Union
 
 import torch
 import torch.nn as nn

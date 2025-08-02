@@ -11,9 +11,7 @@ Usage:
 import argparse
 import logging
 import sys
-import os
 from pathlib import Path
-from typing import Dict, Any
 
 import torch
 
@@ -90,7 +88,7 @@ def train_command(args):
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     param_size_gb = sum(p.numel() * p.element_size() for p in model.parameters()) / (1024**3)
 
-    logger.info(f"Model created:")
+    logger.info("Model created:")
     logger.info(f"  Total parameters: {total_params:,}")
     logger.info(f"  Trainable parameters: {trainable_params:,}")
     logger.info(f"  Parameter size: {param_size_gb:.2f} GB")

@@ -93,7 +93,7 @@ def compare_implementations():
 
     # Create model configuration
     config = create_model_config()
-    print(f"📋 Model Configuration:")
+    print("📋 Model Configuration:")
     key_params = ["input_dim", "hidden_dim", "output_dim", "pert_dim", "cell_set_len"]
     for key in key_params:
         print(f"   {key}: {config[key]}")
@@ -110,7 +110,7 @@ def compare_implementations():
         pert_dim=config["pert_dim"],
         gene_dim=config["gene_dim"],
     )
-    print(f"   Input shapes:")
+    print("   Input shapes:")
     for key, value in batch.items():
         if torch.is_tensor(value):
             print(f"     {key}: {value.shape}")
@@ -137,7 +137,7 @@ def compare_implementations():
     print(f"   Vanilla model parameters: {vanilla_params:,}")
 
     if lightning_params != vanilla_params:
-        print(f"   ⚠️  Parameter counts don't match!")
+        print("   ⚠️  Parameter counts don't match!")
         return False
     print()
 
@@ -183,7 +183,7 @@ def compare_implementations():
     max_main_diff = main_diff.max().item()
     mean_main_diff = main_diff.mean().item()
 
-    print(f"   Main output:")
+    print("   Main output:")
     print(f"     Max difference: {max_main_diff:.2e}")
     print(f"     Mean difference: {mean_main_diff:.2e}")
     print(f"     Lightning range: [{lightning_main.min():.4f}, {lightning_main.max():.4f}]")
@@ -195,7 +195,7 @@ def compare_implementations():
         max_conf_diff = conf_diff.max().item()
         mean_conf_diff = conf_diff.mean().item()
 
-        print(f"   Confidence output:")
+        print("   Confidence output:")
         print(f"     Max difference: {max_conf_diff:.2e}")
         print(f"     Mean difference: {mean_conf_diff:.2e}")
 
@@ -211,14 +211,14 @@ def compare_implementations():
 
     print(f"\n{'✅' if success else '❌'} Comparison Result:")
     if success:
-        print(f"   PASSED - Both implementations produce nearly identical outputs")
+        print("   PASSED - Both implementations produce nearly identical outputs")
         print(f"   Maximum difference: {max_main_diff:.2e} (tolerance: {tolerance:.2e})")
     else:
-        print(f"   FAILED - Implementations differ significantly")
+        print("   FAILED - Implementations differ significantly")
         print(f"   Maximum difference: {max_main_diff:.2e} (tolerance: {tolerance:.2e})")
 
         # Additional debugging info
-        print(f"\n🔧 Debugging Info:")
+        print("\n🔧 Debugging Info:")
         print(f"   First 5 Lightning values: {lightning_main.flatten()[:5].tolist()}")
         print(f"   First 5 Vanilla values: {vanilla_main.flatten()[:5].tolist()}")
         print(f"   First 5 differences: {main_diff.flatten()[:5].tolist()}")
@@ -317,14 +317,14 @@ if __name__ == "__main__":
         # Run quick tests
         quick_success = run_quick_tests()
 
-        print(f"\n🏁 Final Results:")
+        print("\n🏁 Final Results:")
         print(f"   Main comparison: {'✅ PASSED' if main_success else '❌ FAILED'}")
         print(f"   Quick tests: {'✅ PASSED' if quick_success else '❌ FAILED'}")
 
         if main_success and quick_success:
-            print(f"\n🎉 SUCCESS: Vanilla PyTorch implementation matches Lightning implementation!")
+            print("\n🎉 SUCCESS: Vanilla PyTorch implementation matches Lightning implementation!")
         else:
-            print(f"\n⚠️  ISSUES DETECTED: Please check implementation differences.")
+            print("\n⚠️  ISSUES DETECTED: Please check implementation differences.")
 
     except ImportError as e:
         print(f"❌ Import Error: {e}")

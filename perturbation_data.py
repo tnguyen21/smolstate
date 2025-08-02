@@ -5,16 +5,14 @@ Standalone PerturbationDataModule - adapted from cell-load without Lightning dep
 import logging
 import glob
 import re
-from functools import partial
 from pathlib import Path
-from typing import Literal, Set, Dict, Any, Optional
+from typing import Set, Dict, Optional
 import sys
 
 import h5py
 import numpy as np
 import torch
-from torch.utils.data import DataLoader, Dataset, Subset
-from tqdm import tqdm
+from torch.utils.data import DataLoader, Subset
 
 # Handle toml import
 if sys.version_info >= (3, 11):
