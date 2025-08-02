@@ -5,15 +5,8 @@ from pathlib import Path
 from typing import Dict, Any, Optional, Tuple
 from torch.utils.data import DataLoader
 
-try:
-    from .perturbation_data import PerturbationDataModule
-except ImportError:
-    from perturbation_data import PerturbationDataModule
-
-try:
-    from .config import create_config
-except ImportError:
-    from config import create_config
+from perturbation_data import PerturbationDataModule
+from config import create_config
 
 logger = logging.getLogger(__name__)
 
@@ -76,8 +69,6 @@ class DataModuleWrapper:
             "pert": getattr(self.data_module, "pert_onehot_map", {}),
             "batch": getattr(self.data_module, "batch_onehot_map", {}),
         }
-
-        logger.info(f"Data module setup complete. Var dims: {self.var_dims}")
 
     def get_dataloaders(self) -> Tuple[DataLoader, Optional[DataLoader]]:
         """Get train and validation dataloaders."""

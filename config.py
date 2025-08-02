@@ -3,32 +3,12 @@ from pathlib import Path
 from typing import Dict, Any, Optional
 import logging
 import sys
+import tomllib
 
-# Handle toml import for different Python versions
-if sys.version_info >= (3, 11):
-    import tomllib
 
-    def load_toml(file_path):
-        with open(file_path, "rb") as f:
-            return tomllib.load(f)
-else:
-    try:
-        import toml
-
-        def load_toml(file_path):
-            with open(file_path, "r") as f:
-                return toml.load(f)
-    except ImportError:
-        import configparser
-
-        def load_toml(file_path):
-            # Fallback parser - basic TOML support
-            config = configparser.ConfigParser()
-            config.read(file_path)
-            result = {}
-            for section_name in config.sections():
-                result[section_name] = dict(config[section_name])
-            return result
+def load_toml(file_path):
+    with open(file_path, "rb") as f:
+        return tomllib.load(f)
 
 
 logger = logging.getLogger(__name__)
