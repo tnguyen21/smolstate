@@ -14,7 +14,7 @@ from state.tx.models.state_transition import (
     StateTransitionPerturbationModel as LightningModel,
 )
 
-from smolstate.embd_sum import StateTransitionPerturbationModel as VanillaModel
+from smolstate.model import StateTransitionPerturbationModel as VanillaModel
 
 
 def set_seed(seed: int = 42):
