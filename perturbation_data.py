@@ -161,31 +161,26 @@ class SimplePerturbationDataset:
         self.batch_onehot_map = batch_onehot_map or {}
         self.cell_type_onehot_map = cell_type_onehot_map or {}
 
-        # Load metadata
         self._load_metadata()
 
     def _load_metadata(self):
         """Load metadata from H5 file."""
         with h5py.File(self.h5_path, "r") as f:
-            # Load perturbation categories
             pert_arr = f[f"obs/{self.pert_col}/categories"][:]
             self.pert_categories = safe_decode_array(pert_arr)
 
-            # Load cell type categories
             try:
                 celltype_arr = f[f"obs/{self.cell_type_key}/categories"][:]
             except KeyError:
                 celltype_arr = f[f"obs/{self.cell_type_key}"][:]
             self.cell_type_categories = safe_decode_array(celltype_arr)
 
-            # Load batch categories
             try:
                 batch_arr = f[f"obs/{self.batch_col}/categories"][:]
             except KeyError:
                 batch_arr = f[f"obs/{self.batch_col}"][:]
             self.batch_categories = safe_decode_array(batch_arr)
 
-            # Load codes (indices into categories)
             self.pert_codes = f[f"obs/{self.pert_col}/codes"][:]
             self.cell_type_codes = (
                 f[f"obs/{self.cell_type_key}/codes"][:]
@@ -198,24 +193,20 @@ class SimplePerturbationDataset:
                 else f[f"obs/{self.batch_col}"][:]
             )
 
-            # Find control perturbation code
             try:
                 self.control_pert_code = list(self.pert_categories).index(self.control_pert)
             except ValueError:
                 logger.warning(f"Control perturbation '{self.control_pert}' not found in {self.h5_path}")
                 self.control_pert_code = 0
 
-            # Get dimensions
             if self.embed_key and f"obsm/{self.embed_key}" in f:
                 self.n_features = f[f"obsm/{self.embed_key}"].shape[1]
             else:
-                # X is a sparse matrix stored as group, get shape from var
                 self.n_features = len(f["var"])
 
             self.n_genes = len(f["var"])
             self.n_cells = len(f["obs"])
 
-            # Get gene names
             if "var/gene_ids" in f:
                 self.gene_names = safe_decode_array(f["var/gene_ids"][:])
             elif "var/_index" in f:
@@ -235,7 +226,6 @@ class SimplePerturbationDataset:
 
     def get_num_hvgs(self):
         """Get number of highly variable genes."""
-        # Simplified - assume HVG is same as total genes
         return self.n_genes
 
     def to_subset_dataset(self, split: str, pert_indices: np.ndarray, ctrl_indices: np.ndarray):
@@ -248,12 +238,7 @@ class SimplePerturbationDataset:
 
     def __getitem__(self, idx):
         """Get a single item - simplified implementation with correct tensor shapes."""
-        # For training, we need tensors shaped for the model:
-        # Model expects to reshape: pert_emb.reshape(-1, cell_sentence_len, pert_dim)
-        # So pert_emb should have size: cell_sentence_len * pert_dim
-        # From error: tensor size 405504 means pert_dim = 405504 / 128 = 3168
 
-        # Get actual dimensions from one-hot maps if available
         pert_dim = next(iter(self.pert_onehot_map.values())).shape[0] if self.pert_onehot_map else self.n_features
         cell_sentence_len = 128  # Default from model config
 
@@ -290,7 +275,6 @@ class PerturbationDataModule:
     ):
         """Initialize PerturbationDataModule."""
 
-        # Load configuration
         self.toml_config_path = toml_config_path
         self.config = ExperimentConfig.from_toml(toml_config_path)
         self.config.validate()
@@ -451,7 +435,6 @@ class PerturbationDataModule:
                     celltypes = set(safe_decode_array(celltype_arr))
                     all_celltypes.update(celltypes)
 
-        # Create one-hot maps
         if self.perturbation_features_file:
             # Load custom perturbation features
             featurization_dict = torch.load(self.perturbation_features_file)

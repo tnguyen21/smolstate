@@ -91,7 +91,6 @@ def compare_implementations():
     print("Comparing PyTorch Lightning vs Vanilla PyTorch Implementations")
     print("=" * 70)
 
-    # Create model configuration
     config = create_model_config()
     print("Model Configuration:")
     key_params = ["input_dim", "hidden_dim", "output_dim", "pert_dim", "cell_set_len"]
@@ -101,7 +100,6 @@ def compare_implementations():
     print(f"   batch_encoder: {config['batch_encoder']}")
     print()
 
-    # Create test batch
     print("Creating test batch...")
     batch = create_test_batch(
         batch_size=2,
@@ -116,7 +114,6 @@ def compare_implementations():
             print(f"     {key}: {value.shape}")
     print()
 
-    # Create models with identical initialization
     print("Creating models with identical weights...")
 
     # Lightning model
@@ -250,12 +247,10 @@ def run_quick_tests():
     for i, test_config in enumerate(test_configs, 1):
         print(f"\nTest {i}: {test_config['name']}")
 
-        # Create modified config
         config = base_config.copy()
         config.update({k: v for k, v in test_config.items() if k != "name"})
 
         try:
-            # Create models
             set_seed(42)
             lightning_model = LightningModel(**config)
             lightning_model.eval()
@@ -264,7 +259,6 @@ def run_quick_tests():
             vanilla_model = VanillaModel(**config)
             vanilla_model.eval()
 
-            # Create smaller test batch for speed
             batch = create_test_batch(
                 batch_size=1,
                 seq_len=config["cell_set_len"],

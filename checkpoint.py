@@ -19,7 +19,6 @@ class CheckpointManager:
         self.save_freq = save_freq
         self.keep_n_checkpoints = keep_n_checkpoints
 
-        # Track saved checkpoints
         self.saved_checkpoints = []
 
     def save_checkpoint(
@@ -64,7 +63,6 @@ class CheckpointManager:
         if hasattr(model, "hparams"):
             checkpoint_data["hyper_parameters"] = model.hparams
 
-        # Save checkpoint
         torch.save(checkpoint_data, checkpoint_path)
         logger.info(f"Saved checkpoint: {checkpoint_path}")
 
@@ -192,7 +190,6 @@ def load_model_from_checkpoint(checkpoint_path: str, model_class: type, map_loca
     else:
         raise ValueError("No model hyperparameters found in checkpoint")
 
-    # Create model
     model = model_class(**model_kwargs)
 
     # Load model state
@@ -231,7 +228,6 @@ if __name__ == "__main__":
     # Test checkpoint manager
     checkpoint_manager = CheckpointManager("test_output")
 
-    # Create dummy model and optimizer for testing
     model = torch.nn.Linear(10, 1)
     optimizer = torch.optim.Adam(model.parameters())
 

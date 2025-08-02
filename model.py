@@ -186,14 +186,12 @@ class PerturbationModel(nn.Module, ABC):
             **kwargs,
         }
 
-        # Build decoder if specified
         decoder_cfg = kwargs.get("decoder_cfg")
         if decoder_cfg and kwargs.get("gene_decoder_bool", True):
             self.gene_decoder = LatentToGeneDecoder(**decoder_cfg)
         else:
             self.gene_decoder = None
 
-        # Build the main networks
         self._build_networks()
 
     @abstractmethod
@@ -253,7 +251,6 @@ class StateTransitionPerturbationModel(PerturbationModel):
             **kwargs,
         )
 
-        # Build loss function
         self._build_loss_function(kwargs)
 
         # Add batch encoder if needed
@@ -308,7 +305,6 @@ class StateTransitionPerturbationModel(PerturbationModel):
 
         activation_class = get_activation_class(self.hparams.get("activation", "gelu"))
 
-        # Perturbation encoder
         self.pert_encoder = build_mlp(
             in_dim=self.pert_dim,
             out_dim=self.hidden_dim,

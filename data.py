@@ -209,10 +209,8 @@ def create_data_module(config: Dict[str, Any]) -> DataModuleWrapper:
 def test_data_loading():
     """Test data loading functionality."""
 
-    # Create config
     config = create_config()
 
-    # Create data module
     data_module = create_data_module(config.config)
 
     # Get dataloaders

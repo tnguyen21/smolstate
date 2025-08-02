@@ -3,7 +3,6 @@ Model utilities - standalone version of state.tx.models.utils
 Contains only the necessary functions for StateTransitionPerturbationModel
 """
 
-
 import torch
 import torch.nn as nn
 from transformers import GPT2Config, GPT2Model, LlamaConfig, LlamaModel, PreTrainedModel
