@@ -486,26 +486,22 @@ def create_data_module(config: Dict) -> PerturbationDataModule:
     return data_wrapper
 
 
-def test_data_loading():
+if __name__ == "__main__":
     """Test data loading functionality."""
     from config import create_config
 
     config = create_config()
-
     data_module = create_data_module(config.config)
 
-    # Get dataloaders
     train_dl, val_dl = data_module.train_dataloader(), data_module.val_dataloader()
 
     print(f"Train dataloader: {len(train_dl)} batches")
     if val_dl:
         print(f"Val dataloader: {len(val_dl)} batches")
 
-    # Get model dimensions
     dims = data_module.get_var_dims()
     print(f"Model dimensions: {dims}")
 
-    # Test a batch
     batch = next(iter(train_dl))
     print(f"Batch keys: {batch.keys()}")
     for key, value in batch.items():
@@ -513,7 +509,3 @@ def test_data_loading():
             print(f"  {key}: {value.shape}")
         else:
             print(f"  {key}: {type(value)} (len={len(value) if hasattr(value, '__len__') else 'N/A'})")
-
-
-if __name__ == "__main__":
-    test_data_loading()
