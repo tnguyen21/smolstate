@@ -22,17 +22,10 @@ current_dir = Path(__file__).parent
 if str(current_dir) not in sys.path:
     sys.path.insert(0, str(current_dir))
 
-try:
-    from .config import create_config, parse_cli_overrides
-    from .data import create_data_module, DataConfig
-    from .model import StateTransitionPerturbationModel
-    from .train import create_trainer
-except ImportError:
-    # Fallback for direct execution
-    from config import create_config, parse_cli_overrides
-    from data import create_data_module, DataConfig
-    from model import StateTransitionPerturbationModel
-    from train import create_trainer
+from .config import create_config, parse_cli_overrides
+from .data import create_data_module, DataConfig
+from .model import StateTransitionPerturbationModel
+from .train import create_trainer
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
