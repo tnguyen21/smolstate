@@ -7,18 +7,11 @@ import torch
 import torch.nn as nn
 from geomloss import SamplesLoss
 
-try:
-    from .model_utils import (
-        build_mlp,
-        get_activation_class,
-        get_transformer_backbone,
-    )
-except ImportError:
-    from model_utils import (
-        build_mlp,
-        get_activation_class,
-        get_transformer_backbone,
-    )
+from model_utils import (
+    build_mlp,
+    get_activation_class,
+    get_transformer_backbone,
+)
 
 logger = logging.getLogger(__name__)
 

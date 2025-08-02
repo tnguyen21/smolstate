@@ -2,7 +2,6 @@ import yaml
 from pathlib import Path
 from typing import Dict, Any, Optional
 import logging
-import sys
 import tomllib
 
 

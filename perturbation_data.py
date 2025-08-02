@@ -7,37 +7,18 @@ import glob
 import re
 from pathlib import Path
 from typing import Set, Dict, Optional
-import sys
 
 import h5py
 import numpy as np
 import torch
 from torch.utils.data import DataLoader, Subset
 
-# Handle toml import
-if sys.version_info >= (3, 11):
-    import tomllib
+import tomllib
 
-    def load_toml(file_path):
-        with open(file_path, "rb") as f:
-            return tomllib.load(f)
-else:
-    try:
-        import toml
 
-        def load_toml(file_path):
-            with open(file_path, "r") as f:
-                return toml.load(f)
-    except ImportError:
-        import configparser
-
-        def load_toml(file_path):
-            config = configparser.ConfigParser()
-            config.read(file_path)
-            result = {}
-            for section_name in config.sections():
-                result[section_name] = dict(config[section_name])
-            return result
+def load_toml(file_path):
+    with open(file_path, "rb") as f:
+        return tomllib.load(f)
 
 
 logger = logging.getLogger(__name__)
