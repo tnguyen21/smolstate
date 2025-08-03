@@ -98,3 +98,4 @@ config_private.yaml
 *.model
 *.pkl
 *.pickle
+*.vcc
