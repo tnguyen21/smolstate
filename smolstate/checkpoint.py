@@ -182,7 +182,16 @@ def load_model_from_checkpoint(checkpoint_path: str, model_class: type, map_loca
     checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
 
     if "hyper_parameters" in checkpoint:
-        model_kwargs = checkpoint["hyper_parameters"]
+        model_kwargs = checkpoint["hyper_parameters"].copy()
+        # Ensure transformer config is included from the full config if missing
+        if "transformer_backbone_key" not in model_kwargs and "config" in checkpoint:
+            config_kwargs = checkpoint["config"].get("model", {}).get("kwargs", {})
+            model_kwargs.update(
+                {
+                    "transformer_backbone_key": config_kwargs.get("transformer_backbone_key", "GPT2"),
+                    "transformer_backbone_kwargs": config_kwargs.get("transformer_backbone_kwargs", {}),
+                }
+            )
     elif "config" in checkpoint and "model" in checkpoint["config"]:
         model_kwargs = checkpoint["config"]["model"]["kwargs"]
     else:

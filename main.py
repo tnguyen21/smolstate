@@ -5,17 +5,20 @@ SmolState - Minimal reimplementation of state training loop.
 Usage:
     python main.py train [options]
     python main.py train data.kwargs.toml_config_path=../state/starter.toml training.max_steps=400
+    python main.py infer --adata data.h5ad --model-dir out/smolstate_run
 """
 
 from smolstate.config import create_config, parse_cli_overrides
 from smolstate.data import create_data_module, DataConfig
 from smolstate.model import StateTransitionPerturbationModel
 from smolstate.train import create_trainer
+from smolstate.infer import run_inference
 
 import argparse
 import logging
 import sys
 from pathlib import Path
+import yaml
 
 import torch
 
@@ -122,6 +125,13 @@ def train_command(args):
         logger.info("Training completed successfully!")
         logger.info(f"Training summary: {summary}")
 
+        # Save state-compatible config.yaml to output directory
+        state_config = config.to_state_compatible_config()
+        config_yaml_path = output_dir / "config.yaml"
+        with open(config_yaml_path, "w") as f:
+            yaml.dump(state_config, f, default_flow_style=False, sort_keys=False)
+        logger.info(f"Saved config.yaml to {config_yaml_path}")
+
     except KeyboardInterrupt:
         logger.info("Training interrupted by user")
         trainer.checkpoint_manager.save_checkpoint(
@@ -137,6 +147,69 @@ def train_command(args):
         logger.info("Saved checkpoint before exit")
     except Exception as e:
         logger.error(f"Training failed with error: {e}")
+        raise
+
+
+def infer_command(args):
+    """Run inference with the given arguments."""
+    logger.info("Starting smolstate inference")
+
+    try:
+        # Validate input file exists
+        if not Path(args.adata).exists():
+            raise FileNotFoundError(f"Input AnnData file not found: {args.adata}")
+
+        # Validate model directory exists
+        model_dir = Path(args.model_dir)
+        if not model_dir.exists():
+            raise FileNotFoundError(f"Model directory not found: {args.model_dir}")
+
+        # Determine checkpoint path
+        if args.checkpoint:
+            checkpoint_path = Path(args.checkpoint)
+            if not checkpoint_path.exists():
+                raise FileNotFoundError(f"Checkpoint file not found: {args.checkpoint}")
+        else:
+            # Default to final.ckpt in model_dir
+            checkpoint_path = model_dir / "checkpoints" / "final.ckpt"
+            if not checkpoint_path.exists():
+                # Try last.ckpt as fallback
+                last_checkpoint = model_dir / "checkpoints" / "last.ckpt"
+                if last_checkpoint.exists():
+                    checkpoint_path = last_checkpoint
+                    logger.info(f"Using last checkpoint: {checkpoint_path}")
+                else:
+                    raise FileNotFoundError(f"No checkpoint found. Tried: {checkpoint_path} and {last_checkpoint}")
+            else:
+                logger.info(f"Using default checkpoint: {checkpoint_path}")
+
+        # Validate required metadata files exist
+        required_files = ["config.yaml", "var_dims.pkl", "pert_onehot_map.pt"]
+        missing_files = []
+        for file_name in required_files:
+            if not (model_dir / file_name).exists():
+                missing_files.append(file_name)
+
+        if missing_files:
+            raise FileNotFoundError(f"Missing required metadata files in {model_dir}: {missing_files}")
+
+        # Run inference
+        output_path = run_inference(
+            checkpoint_path=str(checkpoint_path),
+            model_dir=args.model_dir,
+            adata_path=args.adata,
+            output_path=args.output,
+            pert_col=args.pert_col,
+            celltype_col=args.celltype_col,
+            celltypes=args.celltypes,
+            batch_size=args.batch_size,
+            embed_key=args.embed_key,
+        )
+
+        logger.info(f"Inference completed successfully! Output saved to: {output_path}")
+
+    except Exception as e:
+        logger.error(f"Inference failed: {e}")
         raise
 
 
@@ -157,6 +230,26 @@ def main():
     train_parser.add_argument("--overwrite", action="store_true", help="Overwrite existing output directory")
     train_parser.add_argument("overrides", nargs="*", help="Configuration overrides (e.g., training.max_steps=1000)")
 
+    # Infer command
+    infer_parser = subparsers.add_parser("infer", help="Run inference on AnnData file")
+    infer_parser.add_argument(
+        "--checkpoint",
+        type=str,
+        help="Path to model checkpoint (.ckpt). If not provided, uses model_dir/checkpoints/final.ckpt",
+    )
+    infer_parser.add_argument("--adata", type=str, required=True, help="Path to input AnnData file (.h5ad)")
+    infer_parser.add_argument("--output", type=str, help="Path to output AnnData file (.h5ad)")
+    infer_parser.add_argument(
+        "--model-dir", type=str, required=True, help="Path to model directory containing config.yaml and metadata files"
+    )
+    infer_parser.add_argument(
+        "--pert-col", type=str, default="target_gene", help="Column in adata.obs for perturbation labels"
+    )
+    infer_parser.add_argument("--celltype-col", type=str, help="Column in adata.obs for cell type labels (optional)")
+    infer_parser.add_argument("--celltypes", type=str, help="Comma-separated list of cell types to include (optional)")
+    infer_parser.add_argument("--batch-size", type=int, help="Batch size for inference (optional)")
+    infer_parser.add_argument("--embed-key", type=str, help="Key in adata.obsm for input features (optional)")
+
     # Info command
     subparsers.add_parser("info", help="Show system info")
 
@@ -164,6 +257,8 @@ def main():
 
     if args.command == "train":
         train_command(args)
+    elif args.command == "infer":
+        infer_command(args)
     elif args.command == "info":
         print(f"PyTorch version: {torch.__version__}")
         print(f"CUDA available: {torch.cuda.is_available()}")

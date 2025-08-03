@@ -212,6 +212,40 @@ class SmolStateConfig:
         """Check if key exists."""
         return key in self.config
 
+    def to_state_compatible_config(self) -> Dict[str, Any]:
+        """Convert smolstate config to state-compatible format for config.yaml."""
+        state_config = {
+            "data": {
+                "name": "PerturbationDataModule",
+                "kwargs": self.get_data_kwargs(),
+                "output_dir": None,
+                "debug": True,
+            },
+            "model": self.config["model"],
+            "training": self.get_training_kwargs(),
+            "wandb": {
+                "entity": "your_entity_name",
+                "project": "smolstate",
+                "local_wandb_dir": "./wandb_logs",
+                "tags": [],
+            },
+            "name": self.config.get("name", "smolstate_run"),
+            "output_dir": self.config.get("output_dir", "out"),
+            "use_wandb": False,
+            "overwrite": self.config.get("overwrite", False),
+            "return_adatas": False,
+            "pred_adata_path": None,
+            "true_adata_path": None,
+        }
+
+        # Ensure model has required fields
+        if "device" not in state_config["model"]:
+            state_config["model"]["device"] = "cuda"
+        if "checkpoint" not in state_config["model"]:
+            state_config["model"]["checkpoint"] = None
+
+        return state_config
+
 
 def create_config(
     toml_config_path: str = "../state/starter.toml",
