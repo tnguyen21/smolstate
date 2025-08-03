@@ -25,6 +25,7 @@ dependencies = [
     "anndata",
     "scanpy",
     "lightning",
+    "cell-load",
 ]
 
 [project.optional-dependencies]

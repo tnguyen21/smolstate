@@ -2,6 +2,7 @@
 Standalone PerturbationDataModule - adapted from cell-load without Lightning dependency.
 """
 
+import tomllib
 import logging
 import glob
 import re
@@ -14,12 +15,8 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-import tomllib
 
 # Import the real PerturbationDataset from cell-load
-import sys
-
-sys.path.append("../cell-load/src")
 from cell_load.dataset import PerturbationDataset, MetadataConcatDataset
 from cell_load.mapping_strategies import RandomMappingStrategy, BatchMappingStrategy
 from cell_load.data_modules.samplers import PerturbationBatchSampler
