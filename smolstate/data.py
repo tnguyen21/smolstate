@@ -35,7 +35,7 @@ class DataModuleWrapper:
 
         # Add batch_size and cell_sentence_len to kwargs
         data_kwargs = data_kwargs.copy()
-        data_kwargs["batch_size"] = training_config.get("batch_size", 16)
+        data_kwargs["batch_size"] = training_config.get("batch_size", 8)
         data_kwargs["cell_sentence_len"] = cell_sentence_len
 
         # CRITICAL: Set toml_config_path from the outer config
