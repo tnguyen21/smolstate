@@ -326,6 +326,18 @@ class StateTransitionPerturbationModel(PerturbationModel):
             self.transformer_backbone_kwargs,
         )
 
+        # Add normalization for perturbation embeddings to prevent instability
+        self.pert_norm = nn.LayerNorm(self.hidden_dim)
+        
+        # Log perturbation encoder architecture for debugging
+        logger.info(f"Perturbation encoder architecture:")
+        logger.info(f"  Input dim: {self.pert_dim} -> Hidden dim: {self.hidden_dim}")
+        logger.info(f"  Number of encoder layers: {self.n_encoder_layers}")
+        logger.info(f"  Dropout: {self.dropout}")
+        for i, layer in enumerate(self.pert_encoder):
+            logger.info(f"  Layer {i}: {layer}")
+        logger.info(f"  + LayerNorm({self.hidden_dim})")
+
         # Output projection
         self.project_out = build_mlp(
             in_dim=self.hidden_dim,
@@ -345,8 +357,92 @@ class StateTransitionPerturbationModel(PerturbationModel):
             )
 
     def encode_perturbation(self, pert: torch.Tensor) -> torch.Tensor:
-        """Embed the perturbation input."""
-        return self.pert_encoder(pert)
+        """Embed the perturbation input with normalization for stability."""
+        # Log raw perturbation input statistics
+        if hasattr(self, 'training') and self.training and torch.rand(1).item() < 0.005:  # Log ~0.5% of steps
+            pert_input_stats = {
+                'min': pert.min().item(),
+                'max': pert.max().item(), 
+                'mean': pert.mean().item(),
+                'std': pert.std().item(),
+                'norm': torch.norm(pert, dim=-1).mean().item()
+            }
+            logger.debug(f"Raw pert input: min={pert_input_stats['min']:.4f}, max={pert_input_stats['max']:.4f}, "
+                        f"mean={pert_input_stats['mean']:.4f}, std={pert_input_stats['std']:.4f}, "
+                        f"norm={pert_input_stats['norm']:.4f}")
+            
+            # Check for extreme raw inputs
+            if abs(pert_input_stats['max']) > 100 or abs(pert_input_stats['min']) < -100:
+                logger.warning(f"Extreme raw perturbation inputs detected: range=[{pert_input_stats['min']:.2f}, {pert_input_stats['max']:.2f}]")
+
+        # Forward through MLP with layer-by-layer monitoring
+        x = pert
+        for i, layer in enumerate(self.pert_encoder):
+            x_prev = x
+            x = layer(x)
+            
+            # Log statistics after each significant layer (Linear layers)
+            if isinstance(layer, torch.nn.Linear) and hasattr(self, 'training') and self.training and torch.rand(1).item() < 0.005:
+                layer_stats = {
+                    'min': x.min().item(),
+                    'max': x.max().item(),
+                    'norm': torch.norm(x, dim=-1).mean().item(),
+                    'has_nan': torch.isnan(x).any().item(),
+                    'has_inf': torch.isinf(x).any().item()
+                }
+                
+                logger.debug(f"Pert encoder layer {i} (Linear): norm={layer_stats['norm']:.4f}, "
+                            f"range=[{layer_stats['min']:.4f}, {layer_stats['max']:.4f}], "
+                            f"nan={layer_stats['has_nan']}, inf={layer_stats['has_inf']}")
+                
+                # Alert on explosive growth
+                if layer_stats['norm'] > 1000:
+                    logger.warning(f"EXPLOSION in pert encoder layer {i}: norm={layer_stats['norm']:.2f}")
+                    logger.warning(f"Input to this layer had norm: {torch.norm(x_prev, dim=-1).mean().item():.4f}")
+                    
+                # Alert on NaN/Inf
+                if layer_stats['has_nan'] or layer_stats['has_inf']:
+                    logger.error(f"NaN/Inf detected in pert encoder layer {i}!")
+                    logger.error(f"Input norm: {torch.norm(x_prev, dim=-1).mean().item():.4f}")
+        
+        encoded = x
+        
+        # Log final encoded output before normalization
+        if hasattr(self, 'training') and self.training and torch.rand(1).item() < 0.005:
+            encoded_stats = {
+                'min': encoded.min().item(),
+                'max': encoded.max().item(),
+                'norm': torch.norm(encoded, dim=-1).mean().item(),
+                'has_nan': torch.isnan(encoded).any().item(),
+                'has_inf': torch.isinf(encoded).any().item()
+            }
+            logger.debug(f"Pre-norm encoded: norm={encoded_stats['norm']:.4f}, "
+                        f"range=[{encoded_stats['min']:.4f}, {encoded_stats['max']:.4f}], "
+                        f"nan={encoded_stats['has_nan']}, inf={encoded_stats['has_inf']}")
+            
+            if encoded_stats['norm'] > 1000:
+                logger.warning(f"Extreme values before LayerNorm: norm={encoded_stats['norm']:.2f}")
+        
+        # Apply normalization
+        normalized = self.pert_norm(encoded)
+        
+        # Log post-normalization statistics
+        if hasattr(self, 'training') and self.training and torch.rand(1).item() < 0.005:
+            norm_stats = {
+                'min': normalized.min().item(),
+                'max': normalized.max().item(),
+                'norm': torch.norm(normalized, dim=-1).mean().item(),
+                'has_nan': torch.isnan(normalized).any().item(),
+                'has_inf': torch.isinf(normalized).any().item()
+            }
+            logger.debug(f"Post-norm: norm={norm_stats['norm']:.4f}, "
+                        f"range=[{norm_stats['min']:.4f}, {norm_stats['max']:.4f}], "
+                        f"nan={norm_stats['has_nan']}, inf={norm_stats['has_inf']}")
+            
+            if norm_stats['has_nan'] or norm_stats['has_inf']:
+                logger.error("LayerNorm itself produced NaN/Inf! Input was too extreme.")
+        
+        return normalized
 
     def encode_basal_expression(self, expr: torch.Tensor) -> torch.Tensor:
         """Embed the basal expression input."""
@@ -375,8 +471,24 @@ class StateTransitionPerturbationModel(PerturbationModel):
         pert_embedding = self.encode_perturbation(pert)
         control_cells = self.encode_basal_expression(basal)
 
+        # Log embedding statistics for stability monitoring
+        if hasattr(self, 'training') and self.training and torch.rand(1).item() < 0.001:  # Log ~0.1% of steps
+            pert_norm = torch.norm(pert_embedding, dim=-1).mean()
+            control_norm = torch.norm(control_cells, dim=-1).mean()
+            pert_range = (pert_embedding.min().item(), pert_embedding.max().item())
+            control_range = (control_cells.min().item(), control_cells.max().item())
+            
+            logger.debug(f"Embedding stats - Pert norm: {pert_norm:.4f}, range: {pert_range}, "
+                        f"Control norm: {control_norm:.4f}, range: {control_range}")
+
         # Combine encodings
         seq_input = pert_embedding + control_cells
+        
+        # Log combined input statistics
+        if hasattr(self, 'training') and self.training and torch.rand(1).item() < 0.001:  # Log ~0.1% of steps
+            combined_norm = torch.norm(seq_input, dim=-1).mean()
+            combined_range = (seq_input.min().item(), seq_input.max().item())
+            logger.debug(f"Combined input - norm: {combined_norm:.4f}, range: {combined_range}")
 
         # Add batch embeddings if available
         if self.batch_encoder is not None:
