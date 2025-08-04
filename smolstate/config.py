@@ -20,6 +20,9 @@ class ConfigLoader:
         self.base_path = Path(base_path)
         self.config_path = self.base_path / "src/state/configs"
 
+        # Also look for configs in smolstate directory
+        self.local_config_path = Path(__file__).parent.parent / "configs"
+
     def load_toml_config(self, toml_path: str) -> Dict[str, Any]:
         """Load TOML configuration file (like starter.toml)."""
         return load_toml(toml_path)
@@ -31,16 +34,31 @@ class ConfigLoader:
 
     def load_model_config(self, model_name: str = "state_sm") -> Dict[str, Any]:
         """Load model configuration."""
+        # Try local config first, then fall back to state config
+        local_config_file = self.local_config_path / "model" / f"{model_name}.yaml"
+        if local_config_file.exists():
+            return self.load_yaml_config(str(local_config_file))
+
         config_file = self.config_path / "model" / f"{model_name}.yaml"
         return self.load_yaml_config(str(config_file))
 
     def load_training_config(self, config_name: str = "default") -> Dict[str, Any]:
         """Load training configuration."""
+        # Try local config first, then fall back to state config
+        local_config_file = self.local_config_path / "training" / f"{config_name}.yaml"
+        if local_config_file.exists():
+            return self.load_yaml_config(str(local_config_file))
+
         config_file = self.config_path / "training" / f"{config_name}.yaml"
         return self.load_yaml_config(str(config_file))
 
     def load_data_config(self, config_name: str = "perturbation") -> Dict[str, Any]:
         """Load data configuration."""
+        # Try local config first, then fall back to state config
+        local_config_file = self.local_config_path / "data" / f"{config_name}.yaml"
+        if local_config_file.exists():
+            return self.load_yaml_config(str(local_config_file))
+
         config_file = self.config_path / "data" / f"{config_name}.yaml"
         return self.load_yaml_config(str(config_file))
 
