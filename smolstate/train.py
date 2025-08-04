@@ -106,9 +106,40 @@ class SmolTrainer:
         losses = self.model.compute_loss(batch, padded=True)
         total_loss = losses["total_loss"]
 
+        # Check for NaN/Inf in loss
+        if torch.isnan(total_loss) or torch.isinf(total_loss):
+            logger.error(f"NaN/Inf detected in loss at step {self.global_step}!")
+            logger.error(f"All losses: {losses}")
+            # Save emergency checkpoint before potentially crashing
+            self.checkpoint_manager.save_checkpoint(
+                model=self.model,
+                optimizer=self.optimizer,
+                scheduler=self.scheduler,
+                step=self.global_step,
+                epoch=self.current_epoch,
+                loss=float("inf"),
+                config=self.config,
+                is_final=False,
+            )
+            raise ValueError(f"NaN/Inf loss detected at step {self.global_step}")
+
         # Backward pass
         self.optimizer.zero_grad()
         total_loss.backward()
+
+        # Check for NaN/Inf in gradients and compute gradient norm
+        grad_norm = 0.0
+        nan_grad_params = []
+        for name, param in self.model.named_parameters():
+            if param.grad is not None:
+                if torch.isnan(param.grad).any() or torch.isinf(param.grad).any():
+                    nan_grad_params.append(name)
+                grad_norm += param.grad.data.norm(2).item() ** 2
+        grad_norm = grad_norm**0.5
+
+        if nan_grad_params:
+            logger.error(f"NaN/Inf gradients detected in parameters: {nan_grad_params}")
+            raise ValueError(f"NaN/Inf gradients at step {self.global_step}")
 
         # Gradient clipping
         if self.gradient_clip_val > 0:
@@ -117,6 +148,9 @@ class SmolTrainer:
         # Optimizer step
         self.optimizer.step()
         self.scheduler.step()
+
+        # Add gradient norm to losses for logging
+        losses["grad_norm"] = grad_norm
 
         # Convert losses to float
         step_losses = {k: v.item() if torch.is_tensor(v) else v for k, v in losses.items()}
