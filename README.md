@@ -2,9 +2,13 @@
 
 A minimal reimplementation of the state perturbation model training loop.
 
+forked from https://github.com/ArcInstitute/state
+
 ## Overview
 
 SmolState provides a simplified, standalone training pipeline for the StateTransitionPerturbationModel, inspired by and adapted from `state/src/state/tx/models/state_transition.py`. This implementation extracts the core training logic from the larger state framework while maintaining compatibility with existing data and model configurations.
+
+hackable repo to produce models for https://virtualcellchallenge.org/
 
 ## Features
 
@@ -114,87 +118,12 @@ out/
 - PyTorch 1.12+
 - CUDA (optional, for GPU training)
 
-## Dependencies
-
-Core dependencies:
-- torch
-- geomloss  
-- pyyaml
-- toml
-
-Additional dependencies:
-- h5py (for reading H5AD files)
-- transformers (for transformer backbones)
-- tqdm (for progress bars)
-
-Note: This implementation is standalone and does not require the full state framework installation.
-
-## Examples
-
-### Minimal Training Run
-```python
-from smolstate import create_config, create_data_module, StateTransitionPerturbationModel, create_trainer
-
-# Load configuration
-config = create_config()
-
-# Setup data
-data_module = create_data_module(config.config)
-train_dl, val_dl = data_module.get_dataloaders()
-
-# Create model
-model_dims = data_module.get_model_dims()
-model_kwargs = config.get_model_kwargs()
-model_kwargs.update(model_dims)
-
-model = StateTransitionPerturbationModel(**model_kwargs)
-
-# Train
-trainer = create_trainer(model, train_dl, val_dl, config.config, "output")
-trainer.train()
-```
-
-### Custom Configuration
-```python
-from smolstate import create_config
-
-# Custom overrides
-overrides = {
-    "training.max_steps": 1000,
-    "training.lr": 5e-5,  
-    "model.kwargs.hidden_dim": 512,
-}
-
-config = create_config(overrides=overrides)
-```
-
-## Development
-
-SmolState is designed to be minimal and hackable. The codebase is small and focused, making it easy to modify for specific research needs.
-
 ### Key Design Principles
 
 1. **Simplicity**: Minimal abstraction, clear data flow
 2. **Compatibility**: Works with existing state configs and data
 3. **Modularity**: Each component can be used independently
 4. **Transparency**: Clear logging and checkpointing
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Tensor Shape Errors**: Ensure data loading returns correctly shaped tensors for the model
-2. **Data Loading**: Check starter.toml paths are correct and H5AD files are accessible
-3. **Memory Issues**: Reduce batch_size or cell_set_len for large datasets
-4. **CUDA Errors**: Verify GPU memory and CUDA compatibility, use CPU fallback if needed
-
-### Debug Mode
-
-For debugging, enable verbose logging:
-```python
-import logging
-logging.basicConfig(level=logging.DEBUG)
-```
 
 ## License
 
