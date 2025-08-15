@@ -31,9 +31,6 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest", "black", "ruff"]
 
-[project.scripts]
-smolstate = "smolstate.__main__:main"
-
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["smolstate*"]
