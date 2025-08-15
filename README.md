@@ -1,23 +1,11 @@
 # SmolState
 
-A minimal reimplementation of the state perturbation model training loop.
-
-forked from https://github.com/ArcInstitute/state
-
 ## Overview
 
 SmolState provides a simplified, standalone training pipeline for the StateTransitionPerturbationModel, inspired by and adapted from `state/src/state/tx/models/state_transition.py`. This implementation extracts the core training logic from the larger state framework while maintaining compatibility with existing data and model configurations.
 
-hackable repo to produce models for https://virtualcellchallenge.org/
-
-## Features
-
-- **Minimal Dependencies**: Only essential packages for training
-- **Config Compatibility**: Uses existing state configuration files
-- **Data Integration**: Compatible with state's PerturbationDataModule
-- **Checkpointing**: Automatic checkpoint saving and resuming
-- **Logging**: Console logging support
-- **CLI Interface**: Simple command-line interface
+for https://virtualcellchallenge.org/
+forked from https://github.com/ArcInstitute/state
 
 ## Quick Start
 
@@ -31,14 +19,7 @@ wget "https://storage.googleapis.com/vcc_data_prod/datasets/state/competition_su
 
 ### Basic Training
 ```bash
-# Option 1: Direct execution
 python main.py train
-
-# Option 2: Module execution  
-python -m smolstate train
-
-# Option 3: Installed package (after pip install -e .)
-smolstate train
 ```
 
 ### With Configuration Overrides
@@ -53,6 +34,18 @@ python main.py train \
 ### Resume Training
 ```bash
 python main.py train --resume out/smolstate_run/checkpoints/last.ckpt
+```
+
+### Inference
+
+```bash
+python main.py infer --adata competition_val_template.h5ad --model-dir out/smolstate_run --output predictions.h5ad
+```
+
+### Preparing Output For Submission
+
+```bash
+uv tool run --from git+https://github.com/ArcInstitute/cell-eval@main cell-eval prep -i prediction.h5ad -g competition_support_set/gene_names.csv
 ```
 
 ## Configuration
