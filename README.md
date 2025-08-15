@@ -21,6 +21,14 @@ hackable repo to produce models for https://virtualcellchallenge.org/
 
 ## Quick Start
 
+### Training and Validation Data
+
+(prepped and provided by the Virtual Cell Challenge team)
+
+```bash
+wget "https://storage.googleapis.com/vcc_data_prod/datasets/state/competition_support_set.zip"
+```
+
 ### Basic Training
 ```bash
 # Option 1: Direct execution
