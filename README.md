@@ -25,7 +25,7 @@ python main.py train
 ### With Configuration Overrides
 ```bash
 python main.py train \
-    data.kwargs.toml_config_path="../state/starter.toml" \
+    data.kwargs.toml_config_path="starter.toml" \
     training.max_steps=400 \
     training.batch_size=8 \
     model.kwargs.hidden_dim=512
